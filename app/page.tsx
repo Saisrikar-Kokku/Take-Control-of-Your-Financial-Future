@@ -25,6 +25,12 @@ export default function Home() {
 
       {/* Hero Section */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="max-w-xl mx-auto mb-8 md:mb-12 p-4 md:p-6 bg-gradient-to-br from-yellow-50 to-amber-100 rounded-xl shadow text-center">
+          <blockquote className="text-lg md:text-xl lg:text-2xl italic font-semibold text-amber-800 leading-relaxed">
+            &quot;If you wish to get rich, save what you get. A fool can earn money, but it takes a wise man to save and dispose of it to his own advantage.&quot;
+          </blockquote>
+          <div className="mt-2 md:mt-3 text-amber-700 font-medium text-sm md:text-base">— Anonymous</div>
+        </div>
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
             Take Control of Your
