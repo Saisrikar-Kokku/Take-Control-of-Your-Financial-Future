@@ -32,14 +32,14 @@ export async function POST(request: NextRequest) {
       const fallbackAnalysis = `
 📊 SPENDING ANALYSIS REPORT
 
-💰 Total Analyzed: $${totalAmount.toFixed(2)}
+💰 Total Analyzed: ₹${totalAmount.toLocaleString('en-IN', { maximumFractionDigits: 2 })}
 📈 Categories Found: ${categories.length}
-🏆 Top Spending Category: ${topCategoryName} ($${Number(topCategoryAmount).toFixed(2)})
+🏆 Top Spending Category: ${topCategoryName} (₹${Number(topCategoryAmount).toLocaleString('en-IN', { maximumFractionDigits: 2 })})
 
 🔍 KEY INSIGHTS:
 • Your highest spending is in ${topCategoryName}, accounting for ${totalAmount > 0 ? ((Number(topCategoryAmount) / totalAmount) * 100).toFixed(1) : '0'}% of total expenses
 • You have expenses across ${categories.length} different categories, showing good spending diversity
-• Average expense amount: $${(totalAmount / expenses.length).toFixed(2)}
+• Average expense amount: ₹${(totalAmount / expenses.length).toLocaleString('en-IN', { maximumFractionDigits: 2 })}
 
 💡 MONEY-SAVING RECOMMENDATIONS:
 1. Consider setting a weekly budget for ${topCategoryName} to control your highest spending category
@@ -56,18 +56,19 @@ export async function POST(request: NextRequest) {
 
     // Prepare the prompt for Gemini
     const prompt = `
-You are a financial advisor AI. Analyze the following expense data and provide insights:
+You are a financial advisor AI. All amounts are in Indian Rupees (INR, ₹). Please use ₹ in your response.
+Analyze the following expense data and provide insights:
 
 Expense Data:
-${expenses.map(exp => `- $${exp.amount} on ${exp.category} (${exp.date}): ${exp.description || 'No description'}`).join('\n')}
+${expenses.map(exp => `- ₹${exp.amount} on ${exp.category} (${exp.date}): ${exp.description || 'No description'}`).join('\n')}
 
 Please provide:
-1. Top 3-5 spending categories with amounts
+1. Top 3-5 spending categories with amounts (in ₹)
 2. Spending patterns and trends you notice
 3. 2-3 specific, actionable money-saving recommendations
 4. Any concerning spending habits
 
-Keep the response concise but insightful, formatted nicely with emojis and clear sections.
+Keep the response concise but insightful, formatted nicely with emojis and clear sections. Use ₹ for all amounts.
 `
 
     // Make the API call to Gemini

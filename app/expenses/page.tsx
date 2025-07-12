@@ -155,6 +155,7 @@ export default function ExpensesPage() {
       .single()
     if (error) {
       setEditError(error.message || 'Failed to update expense.')
+      console.error('Edit expense error:', error)
     } else if (data) {
       setExpenses((prev) => prev.map((e) => e.id === editExpense.id ? data : e))
       setEditSuccess('Expense updated!')

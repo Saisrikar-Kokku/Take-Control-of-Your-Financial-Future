@@ -1,5 +1,17 @@
 'use client'
 
+// Add robust error logging for build-time debugging
+if (typeof window === 'undefined') {
+  process.on('unhandledRejection', (reason) => {
+    // eslint-disable-next-line no-console
+    console.error('UNHANDLED REJECTION:', reason);
+  });
+  process.on('uncaughtException', (err) => {
+    // eslint-disable-next-line no-console
+    console.error('UNCAUGHT EXCEPTION:', err);
+  });
+}
+
 import { useEffect, useState } from 'react'
 import { AuthGuard } from '@/components/AuthGuard'
 import { Navigation } from '@/components/Navigation'
@@ -63,79 +75,85 @@ export default function BudgetPage() {
   const [deleteLoadingId, setDeleteLoadingId] = useState<string | null>(null)
 
   useEffect(() => {
-    if (user) {
-      loadData()
-    }
-  }, [user])
+    if (!user) return;
+    loadData();
+  }, [user]);
 
   const loadData = async () => {
+    if (!user) return;
     try {
       // Load budgets
       const { data: budgetsData, error: budgetsError } = await supabase
         .from('budgets')
         .select('*')
-        .eq('user_id', user!.id)
-        .order('created_at', { ascending: false })
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
 
       // Load expenses for progress calculation
       const { data: expensesData, error: expensesError } = await supabase
         .from('expenses')
         .select('*')
-        .eq('user_id', user!.id)
+        .eq('user_id', user.id);
 
-      if (budgetsError) throw budgetsError
-      if (expensesError) throw expensesError
-
-      setBudgets(budgetsData || [])
-      setExpenses(expensesData || [])
+      if (budgetsError) {
+        setError('Failed to load budgets: ' + budgetsError.message);
+        setBudgets([]);
+      } else {
+        setBudgets(Array.isArray(budgetsData) ? budgetsData : []);
+      }
+      if (expensesError) {
+        setError('Failed to load expenses: ' + expensesError.message);
+        setExpenses([]);
+      } else {
+        setExpenses(Array.isArray(expensesData) ? expensesData : []);
+      }
     } catch (error) {
-      console.error('Error loading data:', error)
-      setError('Failed to load budget data')
+      setError('Unexpected error loading budget data: ' + (error && typeof error === 'object' && 'message' in error ? (error as any).message : String(error)));
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
-    setSuccess('')
-
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+    if (!user) {
+      setError('User not authenticated.');
+      return;
+    }
     // Validate form
     if (!newBudget.amount || !newBudget.category || !newBudget.period) {
-      setError('Please fill in all fields')
-      return
+      setError('Please fill in all fields');
+      return;
     }
-
-    const amount = parseFloat(newBudget.amount)
+    const amount = parseFloat(newBudget.amount);
     if (isNaN(amount) || amount <= 0) {
-      setError('Please enter a valid amount greater than 0')
-      return
+      setError('Please enter a valid amount greater than 0');
+      return;
     }
-
     try {
       const { error: insertError } = await supabase
         .from('budgets')
         .insert([
           {
-            user_id: user!.id,
+            user_id: user.id,
             amount: amount,
             category: newBudget.category,
             period: newBudget.period
           }
-        ])
-
+        ]);
       if (insertError) {
-        setError(insertError.message)
+        setError('Failed to create budget: ' + insertError.message);
       } else {
-        setSuccess('Budget created successfully!')
-        setNewBudget({ amount: '', category: '', period: 'monthly' })
-        loadData() // Reload data
+        setSuccess('Budget created successfully!');
+        setNewBudget({ amount: '', category: '', period: 'monthly' });
+        loadData(); // Reload data
       }
     } catch (err) {
-      setError('An unexpected error occurred')
+      setError('An unexpected error occurred: ' + (err && typeof err === 'object' && 'message' in err ? (err as any).message : String(err)));
     }
-  }
+  };
 
   const calculateBudgetProgress = (budget: Budget) => {
     const now = new Date()
@@ -229,17 +247,17 @@ export default function BudgetPage() {
     setEditLoading(false)
   }
 
+  // For debugging: use a hardcoded budget object
+  const staticBudget = { amount: 10000, period: 'monthly', category: 'Food & Dining', id: 'static', user_id: 'static', created_at: new Date().toISOString() };
+  const staticProgress = calculateBudgetProgress(staticBudget);
+
+  // Step 1: Restore outer layout for build debugging
   return (
     <AuthGuard>
       <div className="min-h-screen bg-gray-50">
         <Navigation />
-        
         <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900">Budget Planner</h1>
-            <p className="text-gray-600">Set and track your spending budgets.</p>
-          </div>
-
+          <h1 className="text-3xl font-bold text-gray-900 mb-8">Budget Planner</h1>
           <div className="grid lg:grid-cols-3 gap-8">
             {/* Create Budget Form */}
             <Card className="lg:col-span-1">
@@ -323,7 +341,6 @@ export default function BudgetPage() {
                 </form>
               </CardContent>
             </Card>
-
             {/* Active Budgets */}
             <div className="lg:col-span-2">
               <Card>
@@ -344,18 +361,15 @@ export default function BudgetPage() {
                     </div>
                   ) : (
                     <div className="space-y-6">
-                      {budgets.map((budget) => {
-                        const progress = calculateBudgetProgress(budget)
-                        const isOverBudget = progress.spent > Number(budget.amount)
-                        
+                      {/* Map over budgets, but render only static card content for each budget */}
+                      {Array.isArray(budgets) && budgets.length > 0 ? budgets.map((budget) => {
+                        const progress = calculateBudgetProgress(budget);
                         return (
                           <div key={budget.id} className="border rounded-lg p-6">
                             <div className="flex items-center justify-between mb-4">
                               <div>
-                                <h3 className="font-semibold text-lg capitalize">
-                                  {budget.period} Budget
-                                </h3>
-                                <p className="text-sm text-muted-foreground">{formatINR(Number(budget.amount))} budget</p>
+                                <h3 className="font-semibold text-lg capitalize">{budget.period} Budget</h3>
+                                <p className="text-sm text-muted-foreground">{formatINR(budget.amount)} budget</p>
                               </div>
                               <div className="flex items-center gap-2">
                                 <Button size="icon" variant="outline" onClick={() => openEditBudget(budget)} title="Edit">
@@ -366,90 +380,79 @@ export default function BudgetPage() {
                                 </Button>
                               </div>
                             </div>
-
                             <div className="text-right">
-                              <div className={`text-lg font-bold ${isOverBudget ? 'text-red-600' : 'text-green-600'}`}>{formatINR(progress.spent)} spent</div>
+                              <div className="text-lg font-bold text-green-600">{formatINR(progress.spent)} spent</div>
                               <div className="text-sm text-muted-foreground">{formatINR(Math.abs(progress.remaining))} {progress.remaining >= 0 ? 'remaining' : 'over'}</div>
                             </div>
-
                             <div className="space-y-2 mt-2">
                               <div className="flex justify-between text-sm">
                                 <span>Progress</span>
                                 <span>{progress.percentage.toFixed(1)}%</span>
                               </div>
-                              <Progress 
-                                value={progress.percentage} 
-                                className={`h-2 ${isOverBudget ? '[&>div]:bg-red-500' : ''}`}
-                              />
-                            </div>
-
-                            {isOverBudget && (
-                              <div className="mt-4 flex items-center gap-2 text-red-600 text-sm">
-                                <AlertTriangle className="h-4 w-4" />
-                                <span>Budget exceeded!</span>
+                              <div className="h-2 w-full bg-gray-200 rounded-full">
+                                <div className="h-2 bg-green-500 rounded-full" style={{ width: `${progress.percentage}%` }}></div>
                               </div>
-                            )}
+                            </div>
                           </div>
-                        )
-                      })}
+                        );
+                      }) : <div className="text-muted-foreground">No budgets to display.</div>}
                     </div>
                   )}
                 </CardContent>
               </Card>
             </div>
           </div>
+          {/* Edit Budget Dialog */}
+          <Dialog open={!!editBudget} onOpenChange={(open) => { if (!open) setEditBudget(null) }}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Edit Budget</DialogTitle>
+                <DialogDescription>Update the details of your budget below.</DialogDescription>
+              </DialogHeader>
+              <form onSubmit={handleEditBudgetSubmit} className="space-y-4">
+                {editError && <div className="text-red-600 text-sm">{editError}</div>}
+                {editSuccess && <div className="text-green-600 text-sm">{editSuccess}</div>}
+                <div className="space-y-2">
+                  <Label htmlFor="edit-amount">Budget Amount</Label>
+                  <Input id="edit-amount" type="number" step="0.01" min="0" value={editForm.amount} onChange={e => handleEditBudgetChange('amount', e.target.value)} required />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-category">Category</Label>
+                  <Select value={editForm.category} onValueChange={value => handleEditBudgetChange('category', value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {BUDGET_CATEGORIES.map((category) => (
+                        <SelectItem key={category} value={category}>{category}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-period">Period</Label>
+                  <Select value={editForm.period} onValueChange={value => handleEditBudgetChange('period', value)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {BUDGET_PERIODS.map((period) => (
+                        <SelectItem key={period.value} value={period.value}>{period.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <DialogFooter>
+                  <Button type="submit" disabled={editLoading}>{editLoading ? 'Saving...' : 'Save Changes'}</Button>
+                  <DialogClose asChild>
+                    <Button type="button" variant="outline">Cancel</Button>
+                  </DialogClose>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
         </main>
       </div>
-
-      {/* Edit Budget Dialog */}
-      <Dialog open={!!editBudget} onOpenChange={(open) => { if (!open) setEditBudget(null) }}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Edit Budget</DialogTitle>
-            <DialogDescription>Update the details of your budget below.</DialogDescription>
-          </DialogHeader>
-          <form onSubmit={handleEditBudgetSubmit} className="space-y-4">
-            {editError && <div className="text-red-600 text-sm">{editError}</div>}
-            {editSuccess && <div className="text-green-600 text-sm">{editSuccess}</div>}
-            <div className="space-y-2">
-              <Label htmlFor="edit-amount">Budget Amount</Label>
-              <Input id="edit-amount" type="number" step="0.01" min="0" value={editForm.amount} onChange={e => handleEditBudgetChange('amount', e.target.value)} required />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-category">Category</Label>
-              <Select value={editForm.category} onValueChange={value => handleEditBudgetChange('category', value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select category" />
-                </SelectTrigger>
-                <SelectContent>
-                  {BUDGET_CATEGORIES.map((category) => (
-                    <SelectItem key={category} value={category}>{category}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-period">Period</Label>
-              <Select value={editForm.period} onValueChange={value => handleEditBudgetChange('period', value)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {BUDGET_PERIODS.map((period) => (
-                    <SelectItem key={period.value} value={period.value}>{period.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <DialogFooter>
-              <Button type="submit" disabled={editLoading}>{editLoading ? 'Saving...' : 'Save Changes'}</Button>
-              <DialogClose asChild>
-                <Button type="button" variant="outline">Cancel</Button>
-              </DialogClose>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
     </AuthGuard>
-  )
+  );
 }
