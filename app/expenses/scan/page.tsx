@@ -180,7 +180,6 @@ export default function ScanReceiptPage() {
               ref={fileInputRef}
               type="file"
               accept="image/jpeg,image/png"
-              capture="environment"
               className="hidden"
               onChange={handleFileChange}
             />
