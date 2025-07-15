@@ -66,6 +66,89 @@ export default function DashboardPage() {
 
   const budgetRemaining = totalBudget - monthlySpending
 
+  // Calculate total spending for each period
+  const now = new Date();
+
+  // Helper: get start of week (Monday)
+  function getStartOfWeek(date: Date) {
+    const d = new Date(date);
+    const day = d.getDay();
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is Sunday
+    return new Date(d.setDate(diff));
+  }
+
+  // Helper: is date in current week
+  function isThisWeek(dateStr: string) {
+    const date = new Date(dateStr);
+    const startOfWeek = getStartOfWeek(now);
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 6);
+    return date >= startOfWeek && date <= endOfWeek;
+  }
+
+  // Helper: is date in current year
+  function isThisYear(dateStr: string) {
+    const date = new Date(dateStr);
+    return date.getFullYear() === now.getFullYear();
+  }
+
+  // Calculate spending for each period
+  const weeklySpending = expenses
+    .filter(expense => isThisWeek(expense.date))
+    .reduce((sum, expense) => sum + Number(expense.amount), 0);
+
+  const yearlySpending = expenses
+    .filter(expense => isThisYear(expense.date))
+    .reduce((sum, expense) => sum + Number(expense.amount), 0);
+
+  // Budgets for each period
+  const weeklyBudget = budgets.find(b => b.period === 'weekly')?.amount || 0;
+  const monthlyBudget = budgets.find(b => b.period === 'monthly')?.amount || 0;
+  const yearlyBudget = budgets.find(b => b.period === 'yearly')?.amount || 0;
+
+  // Remaining for each period
+  const weeklyRemaining = Number(weeklyBudget) - weeklySpending;
+  const monthlyRemaining = Number(monthlyBudget) - monthlySpending;
+  const yearlyRemaining = Number(yearlyBudget) - yearlySpending;
+
+  // Calculate spent per budget (period + category)
+  function getPeriodFilter(period: string) {
+    const now = new Date();
+    if (period === 'weekly') {
+      const startOfWeek = getStartOfWeek(now);
+      const endOfWeek = new Date(startOfWeek);
+      endOfWeek.setDate(startOfWeek.getDate() + 6);
+      return (dateStr: string) => {
+        const date = new Date(dateStr);
+        return date >= startOfWeek && date <= endOfWeek;
+      };
+    } else if (period === 'monthly') {
+      const month = now.getMonth();
+      const year = now.getFullYear();
+      return (dateStr: string) => {
+        const date = new Date(dateStr);
+        return date.getMonth() === month && date.getFullYear() === year;
+      };
+    } else if (period === 'yearly') {
+      const year = now.getFullYear();
+      return (dateStr: string) => {
+        const date = new Date(dateStr);
+        return date.getFullYear() === year;
+      };
+    }
+    return () => false;
+  }
+
+  // For each budget, calculate spent and left
+  const budgetsWithStats = budgets.map(budget => {
+    const periodFilter = getPeriodFilter(budget.period);
+    const spent = expenses
+      .filter(exp => exp.category === budget.category && periodFilter(exp.date))
+      .reduce((sum, exp) => sum + Number(exp.amount), 0);
+    const left = Number(budget.amount) - spent;
+    return { ...budget, spent, left };
+  });
+
   return (
     <AuthGuard>
       <div className="min-h-screen bg-gray-50">
@@ -79,6 +162,46 @@ export default function DashboardPage() {
 
           {/* Stats Cards */}
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            {/* Weekly Budget Card */}
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Weekly Budget</CardTitle>
+                <Target className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{formatINR(weeklyBudget)}</div>
+                <p className="text-xs text-muted-foreground">Budget for this week</p>
+                <div className={`mt-2 text-lg font-semibold ${weeklyRemaining >= 0 ? 'text-green-600' : 'text-red-600'}`}>Left: {formatINR(weeklyRemaining)}</div>
+              </CardContent>
+            </Card>
+
+            {/* Monthly Budget Card */}
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Monthly Budget</CardTitle>
+                <Target className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{formatINR(monthlyBudget)}</div>
+                <p className="text-xs text-muted-foreground">Budget for this month</p>
+                <div className={`mt-2 text-lg font-semibold ${monthlyRemaining >= 0 ? 'text-green-600' : 'text-red-600'}`}>Left: {formatINR(monthlyRemaining)}</div>
+              </CardContent>
+            </Card>
+
+            {/* Yearly Budget Card */}
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Yearly Budget</CardTitle>
+                <Target className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{formatINR(yearlyBudget)}</div>
+                <p className="text-xs text-muted-foreground">Budget for this year</p>
+                <div className={`mt-2 text-lg font-semibold ${yearlyRemaining >= 0 ? 'text-green-600' : 'text-red-600'}`}>Left: {formatINR(yearlyRemaining)}</div>
+              </CardContent>
+            </Card>
+
+            {/* This Month's Spending Card (keep as is) */}
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">This Month&apos;s Spending</CardTitle>
@@ -86,50 +209,7 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{formatINR(monthlySpending)}</div>
-                <p className="text-xs text-muted-foreground">
-                  +2.5% from last month
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Monthly Budget</CardTitle>
-                <Target className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{formatINR(totalBudget)}</div>
-                <p className="text-xs text-muted-foreground">
-                  {budgets.length} active budgets
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Budget Remaining</CardTitle>
-                <TrendingUp className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className={`text-2xl font-bold ${budgetRemaining >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {formatINR(budgetRemaining)}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  {budgetRemaining >= 0 ? 'Under budget' : 'Over budget'}
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Expenses</CardTitle>
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{expenses.length}</div>
-                <p className="text-xs text-muted-foreground">
-                  All time expenses
-                </p>
+                <p className="text-xs text-muted-foreground">+2.5% from last month</p>
               </CardContent>
             </Card>
           </div>
@@ -147,6 +227,9 @@ export default function DashboardPage() {
             </Button>
             <Button asChild variant="outline">
               <Link href="/ai-insights">AI Insights</Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link href="/expenses/scan">Scan Receipt</Link>
             </Button>
           </div>
 
@@ -197,6 +280,43 @@ export default function DashboardPage() {
               )}
             </CardContent>
           </Card>
+
+          {/* Budgets by Period & Category */}
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            {budgetsWithStats.length === 0 ? (
+              <Card>
+                <CardHeader>
+                  <CardTitle>No Budgets Found</CardTitle>
+                  <CardDescription>Add a budget to get started!</CardDescription>
+                </CardHeader>
+              </Card>
+            ) : (
+              budgetsWithStats.map((budget) => (
+                <Card key={budget.id}>
+                  <CardHeader className="flex flex-col gap-1 pb-2">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-base font-semibold">
+                        {budget.category}
+                      </CardTitle>
+                      <span className="text-xs px-2 py-1 rounded bg-gray-100 text-gray-600">
+                        {budget.period.charAt(0).toUpperCase() + budget.period.slice(1)}
+                      </span>
+                    </div>
+                    <CardDescription>
+                      Budget for this {budget.period}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex flex-col gap-1">
+                      <div className="text-sm">Budget: <span className="font-bold">{formatINR(budget.amount)}</span></div>
+                      <div className="text-sm">Spent: <span className="font-bold">{formatINR(budget.spent)}</span></div>
+                      <div className={`text-sm font-bold ${budget.left >= 0 ? 'text-green-600' : 'text-red-600'}`}>Left: {formatINR(budget.left)}</div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
+          </div>
         </main>
       </div>
     </AuthGuard>
