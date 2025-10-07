@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useEffect, useState } from 'react'
+import { Copy, Check } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { Group } from '@/types/database'
@@ -18,6 +19,8 @@ export default function GroupsPage() {
   const [name, setName] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
+  const [copiedId, setCopiedId] = useState<string | null>(null)
 
   useEffect(() => {
     if (!user) return
@@ -73,37 +76,71 @@ export default function GroupsPage() {
       
       setName('')
       setGroups(g => [newGroup as Group, ...g])
+      setSuccess(`Group "${newGroup.name}" created successfully!`)
+      setTimeout(() => setSuccess(''), 3000)
     } catch (e) {
       setError('Failed to create group')
     }
   }
 
   const [joinId, setJoinId] = useState('')
+  const [joinLoading, setJoinLoading] = useState(false)
+  
   const handleJoin = async () => {
     if (!user || !joinId.trim()) return
     setError('')
-    const { data: group, error } = await supabase
-      .from('groups')
-      .select('id, name, created_at, created_by')
-      .eq('id', joinId.trim())
-      .single()
-    if (error || !group) { setError('Group not found'); return }
-    await supabase.from('group_members').insert([{ group_id: group.id, user_id: user.id, role: 'member' }])
-    setGroups(g => [group as Group, ...g])
-    setJoinId('')
+    setJoinLoading(true)
+    
+    try {
+      const { data: result, error } = await supabase
+        .rpc('join_group_by_id', {
+          group_uuid: joinId.trim(),
+          user_uuid: user.id
+        })
+      
+      if (error) {
+        setError(error.message)
+        return
+      }
+      
+      if (!result.success) {
+        setError(result.error)
+        return
+      }
+      
+      // Add the group to the local state
+      setGroups(g => [result.group as Group, ...g])
+      setJoinId('')
+      setSuccess(`Successfully joined group: ${result.group.name}`)
+      setTimeout(() => setSuccess(''), 3000)
+    } catch (e) {
+      setError('Failed to join group')
+    } finally {
+      setJoinLoading(false)
+    }
+  }
+
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopiedId(text)
+      setTimeout(() => setCopiedId(null), 2000)
+    } catch (err) {
+      console.error('Failed to copy: ', err)
+    }
   }
 
   return (
     <AuthGuard>
       <div className="min-h-screen bg-background">
         <Navigation />
-        <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold">Groups</h1>
-            <p className="text-muted-foreground">Create or join a shared budget group.</p>
+        <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+          <div className="mb-6 sm:mb-8">
+            <h1 className="text-2xl sm:text-3xl font-bold">Groups</h1>
+            <p className="text-sm sm:text-base text-muted-foreground mt-1">Create or join a shared budget group.</p>
           </div>
 
-          <div className="grid lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
             <Card className="lg:col-span-1">
               <CardHeader>
                 <CardTitle>New Group</CardTitle>
@@ -129,7 +166,9 @@ export default function GroupsPage() {
                   <Label htmlFor="gid">Group ID</Label>
                   <Input id="gid" value={joinId} onChange={e => setJoinId(e.target.value)} placeholder="Paste Group ID" />
                 </div>
-                <Button onClick={handleJoin} disabled={!joinId.trim()}>Join</Button>
+                <Button onClick={handleJoin} disabled={!joinId.trim() || joinLoading}>
+                  {joinLoading ? 'Joining...' : 'Join'}
+                </Button>
               </CardContent>
             </Card>
 
@@ -146,14 +185,31 @@ export default function GroupsPage() {
                 ) : (
                   <div className="space-y-2">
                     {groups.map(g => (
-                      <Link key={g.id} href={`/groups/${g.id}`} className="block p-3 border rounded hover:bg-accent">
-                        <div className="font-medium">{g.name}</div>
-                        <div className="text-xs text-muted-foreground">ID: {g.id}</div>
-                      </Link>
+                      <div key={g.id} className="p-3 border rounded hover:bg-accent">
+                        <Link href={`/groups/${g.id}`} className="block">
+                          <div className="font-medium">{g.name}</div>
+                        </Link>
+                        <div className="flex items-center justify-between mt-1">
+                          <div className="text-xs text-muted-foreground truncate flex-1 mr-2">ID: {g.id}</div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => copyToClipboard(g.id)}
+                            className="h-6 w-6 p-0 flex-shrink-0"
+                          >
+                            {copiedId === g.id ? (
+                              <Check className="h-3 w-3 text-green-600" />
+                            ) : (
+                              <Copy className="h-3 w-3" />
+                            )}
+                          </Button>
+                        </div>
+                      </div>
                     ))}
                   </div>
                 )}
                 {error && <div className="text-destructive text-sm mt-3">{error}</div>}
+                {success && <div className="text-green-600 text-sm mt-3">{success}</div>}
               </CardContent>
             </Card>
           </div>

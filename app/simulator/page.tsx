@@ -135,13 +135,13 @@ export default function SimulatorPage() {
     <AuthGuard>
       <div className="min-h-screen bg-background">
         <Navigation />
-        <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold">What‑If Scenario Simulator</h1>
-            <p className="text-muted-foreground">Explore hypothetical changes and see the impact on your monthly spending, savings, and goals.</p>
+        <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+          <div className="mb-6 sm:mb-8">
+            <h1 className="text-2xl sm:text-3xl font-bold">What‑If Scenario Simulator</h1>
+            <p className="text-sm sm:text-base text-muted-foreground mt-1">Explore hypothetical changes and see the impact on your monthly spending, savings, and goals.</p>
           </div>
 
-          <div className="grid lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
             <Card className="lg:col-span-1">
               <CardHeader>
                 <CardTitle>Plan a simple change</CardTitle>

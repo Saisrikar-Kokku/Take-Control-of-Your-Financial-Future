@@ -331,4 +331,4 @@ export default function ScanReceiptPage() {
       </Card>
     </div>
   );
-} 
+}

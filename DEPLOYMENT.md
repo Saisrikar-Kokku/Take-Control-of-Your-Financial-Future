@@ -23,7 +23,9 @@ OCR_SPACE_API_KEY=your_ocr_space_api_key
 2. Go to Settings > API
 3. Copy your Project URL and anon/public key
 4. Run the SQL migration in `supabase/migrations/20250712090418_bright_firefly.sql` in your Supabase SQL editor
-5. Add the additional RLS policies and functions we created for groups
+5. Add the additional RLS policies and functions we created for groups:
+   - Run the `create_group_with_member` function
+   - Run the `join_group_by_id` function
 
 ### 2. Google Gemini API
 1. Go to [Google AI Studio](https://makersuite.google.com/app/apikey)

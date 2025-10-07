@@ -204,19 +204,19 @@ export default function DashboardPage() {
       <div className="min-h-screen bg-gray-50">
         <Navigation />
         
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-            <p className="text-gray-600">Welcome back! Here&apos;s your financial overview.</p>
-            <div className="mt-2 inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 bg-card text-sm">
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+          <div className="mb-6 sm:mb-8">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Dashboard</h1>
+            <p className="text-sm sm:text-base text-gray-600 mt-1">Welcome back! Here&apos;s your financial overview.</p>
+            <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 bg-card text-xs sm:text-sm">
               <span className="font-medium">Mood:</span>
               <span className="capitalize">{stableMood}</span>
-              <span className="text-muted-foreground">• {Math.round((monthlyProgress || 0) * 100)}% of monthly budget</span>
+              <span className="text-muted-foreground hidden sm:inline">• {Math.round((monthlyProgress || 0) * 100)}% of monthly budget</span>
             </div>
           </div>
 
           {/* Stats Cards */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
             {/* Weekly Budget Card */}
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -272,20 +272,20 @@ export default function DashboardPage() {
           </div>
 
           {/* Quick Actions */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            <Button asChild>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-4 mb-6 sm:mb-8">
+            <Button asChild className="w-full">
               <Link href="/expenses/new">Add New Expense</Link>
             </Button>
-            <Button asChild variant="outline">
+            <Button asChild variant="outline" className="w-full">
               <Link href="/expenses">View All Expenses</Link>
             </Button>
-            <Button asChild variant="outline">
+            <Button asChild variant="outline" className="w-full">
               <Link href="/budget">Manage Budgets</Link>
             </Button>
-            <Button asChild variant="outline">
+            <Button asChild variant="outline" className="w-full">
               <Link href="/ai-insights">AI Insights</Link>
             </Button>
-            <Button asChild variant="outline">
+            <Button asChild variant="outline" className="w-full sm:col-span-2 lg:col-span-1">
               <Link href="/expenses/scan">Scan Receipt</Link>
             </Button>
           </div>

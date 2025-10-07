@@ -256,9 +256,9 @@ export default function BudgetPage() {
     <AuthGuard>
       <div className="min-h-screen bg-gray-50">
         <Navigation />
-        <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-8">Budget Planner</h1>
-          <div className="grid lg:grid-cols-3 gap-8">
+        <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6 sm:mb-8">Budget Planner</h1>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8">
             {/* Create Budget Form */}
             <Card className="lg:col-span-1">
               <CardHeader>

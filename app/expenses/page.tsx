@@ -172,13 +172,13 @@ export default function ExpensesPage() {
       <div className="min-h-screen bg-gray-50">
         <Navigation />
         
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="flex justify-between items-center mb-8">
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 sm:mb-8 gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">All Expenses</h1>
-              <p className="text-gray-600">Track and manage your expense history.</p>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">All Expenses</h1>
+              <p className="text-sm sm:text-base text-gray-600 mt-1">Track and manage your expense history.</p>
             </div>
-            <Button asChild>
+            <Button asChild className="w-full sm:w-auto">
               <Link href="/expenses/new">
                 <PlusCircle className="h-4 w-4 mr-2" />
                 Add Expense
