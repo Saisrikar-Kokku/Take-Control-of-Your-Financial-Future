@@ -11,9 +11,12 @@ import {
   Target, 
   Brain,
   LogOut,
-  Menu
+  Menu,
+  Users,
+  Calculator
 } from 'lucide-react'
 import { useState } from 'react'
+import { ThemeToggle } from '@/components/ThemeToggle'
 
 export function Navigation() {
   const { signOut } = useAuth()
@@ -30,12 +33,14 @@ export function Navigation() {
     { href: '/expenses/new', label: 'Add Expense', icon: PlusCircle },
     { href: '/expenses', label: 'View Expenses', icon: Receipt },
     { href: '/budget', label: 'Budget Planner', icon: Target },
+    { href: '/groups', label: 'Groups', icon: Users },
+    { href: '/simulator', label: 'What-If', icon: Calculator },
     { href: '/ai-insights', label: 'AI Insights', icon: Brain },
     { href: '/expenses/scan', label: 'Scan Receipt', icon: Receipt },
   ]
 
   return (
-    <nav className="bg-white shadow-sm border-b">
+    <nav className="bg-card shadow-sm border-b border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center space-x-8">
@@ -49,7 +54,7 @@ export function Navigation() {
                   <Link
                     key={item.href}
                     href={item.href}
-                    className="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-gray-600 hover:text-primary transition-colors"
+                    className="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
                   >
                     <Icon className="h-4 w-4" />
                     <span>{item.label}</span>
@@ -61,14 +66,15 @@ export function Navigation() {
             <div className="md:hidden flex items-center">
               <button
                 aria-label="Open menu"
-                className="p-2 rounded hover:bg-gray-100 focus:outline-none"
+                className="p-2 rounded hover:bg-accent focus:outline-none"
                 onClick={() => setMobileOpen((open) => !open)}
               >
                 <Menu className="h-6 w-6" />
               </button>
             </div>
           </div>
-          <div className="flex items-center">
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
             <Button variant="ghost" onClick={handleSignOut}>
               <LogOut className="h-4 w-4 mr-2" />
               Sign Out
@@ -84,7 +90,7 @@ export function Navigation() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-gray-600 hover:text-primary transition-colors"
+                  className="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
                   onClick={() => setMobileOpen(false)}
                 >
                   <Icon className="h-4 w-4" />

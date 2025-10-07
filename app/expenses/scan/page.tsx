@@ -8,6 +8,9 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 
 const EXPENSE_CATEGORIES = [
   'Food & Dining',
@@ -169,7 +172,7 @@ export default function ScanReceiptPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader>
           <CardTitle>Scan Expense Receipt</CardTitle>
@@ -194,7 +197,7 @@ export default function ScanReceiptPage() {
                     alt="Receipt Preview"
                     width={240}
                     height={240}
-                    className="rounded border object-contain"
+                    className="rounded border border-border object-contain"
                   />
                   {!ocrText && (
                     <Button
@@ -229,8 +232,8 @@ export default function ScanReceiptPage() {
                     </Button>
                   )}
                   {ocrText && !loading && (
-                    <div className="w-full bg-gray-100 rounded p-2 mt-2 text-xs whitespace-pre-wrap">
-                      <strong>Extracted Text:</strong>
+                    <div className="w-full bg-muted text-foreground rounded p-3 mt-2 text-xs whitespace-pre-wrap border border-border">
+                      <div className="font-semibold mb-1">Extracted Text</div>
                       <div>{ocrText}</div>
                       <Button
                         type="button"
@@ -247,81 +250,82 @@ export default function ScanReceiptPage() {
             </div>
           </form>
           <form
-            className="w-full bg-white rounded p-2 mt-4 text-sm flex flex-col gap-2 border"
+            className="w-full bg-card rounded p-3 mt-4 text-sm flex flex-col gap-3 border border-border"
             onSubmit={handleSubmit}
             autoComplete="off"
           >
-            <div className="font-semibold mb-1">Confirm & Edit Details</div>
-            <label>
-              Amount:
-              <input
-                type="number"
-                className="ml-2 border rounded px-2 py-1 w-32"
-                value={formData.amount}
-                onChange={e => setFormData(f => ({ ...f, amount: e.target.value }))}
-                min="0"
-                step="0.01"
-                required
-              />
-            </label>
-            <label>
-              Date:
-              <input
-                type="date"
-                className="ml-2 border rounded px-2 py-1 w-40"
-                value={formData.date}
-                onChange={e => setFormData(f => ({ ...f, date: e.target.value }))}
-                required
-              />
-            </label>
-            <label>
-              Category:
-              <Select value={formData.category} onValueChange={value => setFormData(f => ({ ...f, category: value }))}>
-                <SelectTrigger className="ml-2 w-40">
-                  <SelectValue placeholder="Select a category" />
-                </SelectTrigger>
-                <SelectContent>
-                  {EXPENSE_CATEGORIES.map((category) => (
-                    <SelectItem key={category} value={category}>
-                      {category}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </label>
-            <label>
-              Period:
-              <Select value={formData.period} onValueChange={value => setFormData(f => ({ ...f, period: value }))}>
-                <SelectTrigger className="ml-2 w-40">
-                  <SelectValue placeholder="Select a period" />
-                </SelectTrigger>
-                <SelectContent>
-                  {BUDGET_PERIODS.map((period) => (
-                    <SelectItem key={period} value={period}>
-                      {period.charAt(0).toUpperCase() + period.slice(1)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </label>
-            <label>
-              Description:
-              <textarea
-                className="ml-2 border rounded px-2 py-1 w-full mt-1"
-                value={formData.description}
-                onChange={e => setFormData(f => ({ ...f, description: e.target.value }))}
-                rows={2}
-                maxLength={200}
-                placeholder="Add a note about this expense..."
-              />
-            </label>
+            <div className="font-semibold">Confirm & Edit Details</div>
+            <div className="grid grid-cols-1 gap-3">
+              <div className="grid grid-cols-2 gap-2 items-center">
+                <Label htmlFor="amount">Amount</Label>
+                <Input
+                  id="amount"
+                  type="number"
+                  value={formData.amount}
+                  onChange={e => setFormData(f => ({ ...f, amount: e.target.value }))}
+                  min="0"
+                  step="0.01"
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-2 items-center">
+                <Label htmlFor="date">Date</Label>
+                <Input
+                  id="date"
+                  type="date"
+                  value={formData.date}
+                  onChange={e => setFormData(f => ({ ...f, date: e.target.value }))}
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-2 items-center">
+                <Label>Category</Label>
+                <Select value={formData.category} onValueChange={value => setFormData(f => ({ ...f, category: value }))}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {EXPENSE_CATEGORIES.map((category) => (
+                      <SelectItem key={category} value={category}>
+                        {category}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-2 gap-2 items-center">
+                <Label>Period</Label>
+                <Select value={formData.period} onValueChange={value => setFormData(f => ({ ...f, period: value }))}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a period" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {BUDGET_PERIODS.map((period) => (
+                      <SelectItem key={period} value={period}>
+                        {period.charAt(0).toUpperCase() + period.slice(1)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-2 gap-2 items-start">
+                <Label htmlFor="description">Description</Label>
+                <Textarea
+                  id="description"
+                  value={formData.description}
+                  onChange={e => setFormData(f => ({ ...f, description: e.target.value }))}
+                  rows={3}
+                  placeholder="Add a note about this expense..."
+                />
+              </div>
+            </div>
             <div className="flex gap-2 mt-2">
               <Button type="submit" disabled={saveLoading || !formData.amount || !formData.date || !formData.category || !formData.period} className="w-full">
                 {saveLoading ? 'Saving...' : 'Save Expense'}
               </Button>
             </div>
             {saveSuccess && <div className="text-green-600 text-sm mt-1">Expense saved! Redirecting...</div>}
-            {error && <div className="text-red-600 text-sm mt-1">{error}</div>}
+            {error && <div className="text-destructive text-sm mt-1">{error}</div>}
           </form>
         </CardContent>
       </Card>

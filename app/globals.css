@@ -70,6 +70,29 @@
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
   }
+
+  /* Mood theme overrides */
+  [data-mood="ok"] {
+    --primary: 142 72% 29%; /* green-700 */
+    --primary-foreground: 0 0% 98%;
+    --accent: 142 76% 36%; /* green-600 */
+    --accent-foreground: 0 0% 98%;
+    --ring: 142 72% 29%;
+  }
+  [data-mood="watch"] {
+    --primary: 38 92% 50%; /* amber-500 */
+    --primary-foreground: 0 0% 12%;
+    --accent: 38 92% 50%;
+    --accent-foreground: 0 0% 12%;
+    --ring: 38 92% 50%;
+  }
+  [data-mood="overspend"] {
+    --primary: 0 84% 60%; /* red-500 */
+    --primary-foreground: 0 0% 98%;
+    --accent: 0 84% 60%;
+    --accent-foreground: 0 0% 98%;
+    --ring: 0 84% 60%;
+  }
 }
 
 @layer base {

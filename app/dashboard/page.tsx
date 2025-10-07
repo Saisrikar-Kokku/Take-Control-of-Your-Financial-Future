@@ -10,13 +10,22 @@ import { useAuth } from '@/hooks/useAuth'
 import { Expense, Budget } from '@/types/database'
 import { DollarSign, TrendingUp, Target, Calendar } from 'lucide-react'
 import Link from 'next/link'
-import { formatINR } from '@/lib/utils'
+import { formatINR, computeMood, stabilizeMood } from '@/lib/utils'
 
 export default function DashboardPage() {
   const { user } = useAuth()
   const [expenses, setExpenses] = useState<Expense[]>([])
   const [budgets, setBudgets] = useState<Budget[]>([])
   const [loading, setLoading] = useState(true)
+  const [autoMood, setAutoMood] = useState<boolean>(() => {
+    try {
+      const saved = localStorage.getItem('auto_mood')
+      if (saved === null) return false
+      return saved === 'true'
+    } catch {
+      return false
+    }
+  })
 
   useEffect(() => {
     if (user) {
@@ -149,6 +158,47 @@ export default function DashboardPage() {
     return { ...budget, spent, left };
   });
 
+  // Compute mood based on monthly progress: <80% OK, 80-100% Watch, >100% Overspend
+  const { mood: rawMood, progress: monthlyProgress, reason: moodReason } = computeMood({ spent: monthlySpending, budget: totalBudget })
+  const [stableMood, setStableMood] = useState<'ok' | 'watch' | 'overspend'>(rawMood)
+  useEffect(() => {
+    setStableMood(prev => stabilizeMood(prev, rawMood, monthlyProgress))
+  }, [rawMood, monthlyProgress])
+
+  // Load Auto Mood preference and subscribe to changes
+  useEffect(() => {
+    const onChange = (e: Event) => {
+      try {
+        const v = (e as CustomEvent).detail?.value
+        if (typeof v === 'boolean') setAutoMood(v)
+      } catch {}
+    }
+    window.addEventListener('auto-mood-changed', onChange)
+    const onStorage = (ev: StorageEvent) => {
+      if (ev.key === 'auto_mood' && ev.newValue !== null) setAutoMood(ev.newValue === 'true')
+    }
+    window.addEventListener('storage', onStorage)
+    return () => {
+      window.removeEventListener('auto-mood-changed', onChange)
+      window.removeEventListener('storage', onStorage)
+    }
+  }, [])
+
+  // Apply mood to html data attribute if enabled and broadcast changes
+  useEffect(() => {
+    const root = document.documentElement
+    if (autoMood) {
+      root.setAttribute('data-mood', stableMood)
+      try { localStorage.setItem('current_mood', stableMood) } catch {}
+    } else {
+      root.removeAttribute('data-mood')
+      try { localStorage.removeItem('current_mood') } catch {}
+    }
+    // notify other tabs/components to re-apply
+    try { window.dispatchEvent(new CustomEvent('auto-mood-changed')) } catch {}
+  }, [autoMood, stableMood])
+
+
   return (
     <AuthGuard>
       <div className="min-h-screen bg-gray-50">
@@ -158,6 +208,11 @@ export default function DashboardPage() {
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
             <p className="text-gray-600">Welcome back! Here&apos;s your financial overview.</p>
+            <div className="mt-2 inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 bg-card text-sm">
+              <span className="font-medium">Mood:</span>
+              <span className="capitalize">{stableMood}</span>
+              <span className="text-muted-foreground">• {Math.round((monthlyProgress || 0) * 100)}% of monthly budget</span>
+            </div>
           </div>
 
           {/* Stats Cards */}
@@ -174,6 +229,8 @@ export default function DashboardPage() {
                 <div className={`mt-2 text-lg font-semibold ${weeklyRemaining >= 0 ? 'text-green-600' : 'text-red-600'}`}>Left: {formatINR(weeklyRemaining)}</div>
               </CardContent>
             </Card>
+
+            
 
             {/* Monthly Budget Card */}
             <Card>

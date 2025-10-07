@@ -1,6 +1,9 @@
 import './globals.css';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
+import { RouteLoader } from '@/components/RouteLoader'
+import { ThemeProviderClient } from '@/components/ThemeProviderClient'
+import { MoodManager } from '@/components/MoodManager'
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -16,7 +19,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <body className={inter.className}>
+        <ThemeProviderClient>
+          <RouteLoader />
+          <MoodManager />
+          {children}
+        </ThemeProviderClient>
+      </body>
     </html>
   );
 }
