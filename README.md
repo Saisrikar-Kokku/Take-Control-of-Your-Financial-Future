@@ -1,235 +1,212 @@
-# Expense Tracker & Money Management App
-
-A comprehensive full-stack expense tracking application built with Next.js, Supabase, and AI-powered insights using Google Gemini.
-
-## Features
-
-### 🔐 Authentication
-- User registration and login with Supabase Auth
-- Protected routes with automatic redirects
-- Secure session management
-
-### 💰 Expense Management
-- Add, view, and categorize expenses
-- Real-time expense tracking
-- Search and filter functionality
-- Category-based organization
-
-### 📊 Budget Planning
-- Create monthly, weekly, and yearly budgets
-- Visual progress tracking with progress bars
-- Budget vs. actual spending comparisons
-- Overspending alerts
-
-### 🧠 AI-Powered Insights
-- Spending pattern analysis using Google Gemini AI
-- Personalized money-saving recommendations
-- AI-generated weekend activity planning
-- Smart financial insights
-
-### 📱 Modern UI/UX
-- Responsive design for all devices
-- Clean, professional interface
-- Smooth animations and transitions
-- Intuitive navigation
-
-## Tech Stack
-
-- **Frontend**: Next.js 13+ (App Router), TypeScript, Tailwind CSS
-- **UI Components**: shadcn/ui, Radix UI primitives
-- **Backend**: Supabase (Database, Auth, Real-time)
-- **AI Integration**: Google Gemini API
-- **Icons**: Lucide React
-- **Deployment**: Ready for Netlify/Vercel
-
-## Getting Started
-
-### Prerequisites
-
-1. Node.js 18+ installed
-2. A Supabase account and project
-3. Google Gemini API key (optional, for AI features)
-
-### Installation
-
-1. **Clone and install dependencies**:
-   ```bash
-   npm install
-   ```
-
-2. **Set up Supabase**:
-   - Create a new Supabase project
-   - Copy your project URL and anon key
-   - Create a `.env.local` file:
-     ```env
-     NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
-     NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-     GEMINI_API_KEY=your_gemini_api_key_here
-     ```
-
-3. **Set up the database**:
-   - Navigate to your Supabase project dashboard
-   - Go to the SQL Editor
-   - Run the migration file: `supabase/migrations/create_expense_tracker_schema.sql`
-   - This will create the necessary tables with Row Level Security enabled
-
-4. **Configure Supabase Auth**:
-   - In your Supabase dashboard, go to Authentication > Settings
-   - Add your site URL (e.g., `http://localhost:3000`) to the Site URL field
-   - Disable email confirmation for development (optional)
-
-5. **Start the development server**:
-   ```bash
-   npm run dev
-   ```
-
-## Database Schema
-
-### Tables
-
-1. **expenses**
-   - `id`: UUID primary key
-   - `user_id`: References auth.users
-   - `amount`: Expense amount
-   - `category`: Expense category
-   - `description`: Optional description
-   - `date`: Expense date
-   - `created_at`: Timestamp
-
-2. **categories**
-   - `id`: UUID primary key
-   - `user_id`: References auth.users
-   - `name`: Category name
-   - `created_at`: Timestamp
-
-3. **budgets**
-   - `id`: UUID primary key
-   - `user_id`: References auth.users
-   - `category_id`: Optional category reference
-   - `amount`: Budget amount
-   - `period`: Budget period (weekly/monthly/yearly)
-   - `created_at`: Timestamp
-
-All tables have Row Level Security enabled with policies for authenticated users.
-
-## AI Integration
-
-### Gemini API Setup
-
-1. Get your API key from [Google AI Studio](https://makersuite.google.com/app/apikey)
-2. Add it to your `.env.local` file as `GEMINI_API_KEY`
-3. The app includes two AI features:
-   - **Spending Analysis**: Analyzes your expenses and provides insights
-   - **Weekend Planner**: Suggests activities based on your budget
-
-### API Routes
-
-- `POST /api/gemini/analyze-spending`: Analyzes expense patterns
-- `POST /api/gemini/plan-weekend`: Generates weekend plans
-
-## Project Structure
-
-```
-├── app/                    # Next.js app directory
-│   ├── api/               # API routes
-│   ├── dashboard/         # Dashboard page
-│   ├── expenses/          # Expense management pages
-│   ├── budget/            # Budget planning page
-│   ├── ai-insights/       # AI insights page
-│   ├── login/             # Authentication pages
-│   └── signup/
-├── components/            # Reusable components
-│   ├── ui/               # shadcn/ui components
-│   ├── AuthGuard.tsx     # Route protection
-│   └── Navigation.tsx    # Main navigation
-├── hooks/                # Custom React hooks
-├── lib/                  # Utility functions
-├── types/                # TypeScript type definitions
-└── supabase/             # Database migrations
-```
-
-## Key Features Explained
-
-### Authentication Flow
-- Users can sign up and log in using email/password
-- AuthGuard component protects private routes
-- Automatic redirect to login for unauthenticated users
-- Session persistence across page reloads
-
-### Expense Tracking
-- Intuitive form for adding expenses
-- Real-time updates using Supabase
-- Category-based filtering and searching
-- Visual expense history with pagination
-
-### Budget Management
-- Create budgets for different periods
-- Visual progress tracking with progress bars
-- Automatic calculation of remaining budget
-- Overspending alerts and notifications
-
-### AI Insights
-- Spending pattern analysis using Gemini AI
-- Personalized recommendations for saving money
-- Weekend activity planning based on budget
-- Mock responses for demo purposes when API key is not configured
-
-## Environment Variables
-
-Create a `.env.local` file with:
-
-```env
-# Required for core functionality
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-
-# Optional for AI features
-GEMINI_API_KEY=your_gemini_api_key_here
-```
-
-## Deployment
-
-### Netlify Deployment
-
-1. Push your code to a Git repository
-2. Connect your repository to Netlify
-3. Add environment variables in Netlify dashboard
-4. Deploy with build command: `npm run build`
-
-### Vercel Deployment
-
-1. Install Vercel CLI: `npm i -g vercel`
-2. Run `vercel` in your project directory
-3. Add environment variables in Vercel dashboard
-4. Deploy automatically on git push
-
-## Security Features
-
-- Row Level Security (RLS) on all database tables
-- User isolation - users can only access their own data
-- Environment variable protection for API keys
-- Secure authentication with Supabase Auth
-- Type-safe API routes with TypeScript
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
-
-## License
-
-MIT License - see LICENSE file for details
-
-## Support
-
-For issues and questions:
-1. Check the existing issues on GitHub
-2. Create a new issue with detailed description
-3. Include environment details and error messages
+<!-- AIGNITE Banner (centered) -->
+<div align="center">
+  <h1> AIGNITE 2K25</h1>
+  <p><strong>Powered by MLSC</strong></p>
+</div>
 
 ---
 
-Built with ❤️ using Next.js, Supabase, and Google Gemini AI
+<p align="center">
+  <strong>🚀 ExpenseTracker</strong><br/>
+  <em>Smart Finance Management with AI-Powered Insights</em>
+</p>
+
+---
+
+## 📖 Project Description
+✨ **Problem Statement:** Managing personal finances is challenging for many people. Users struggle with tracking expenses, setting realistic budgets, understanding spending patterns, and making informed financial decisions. Traditional expense tracking apps lack intelligent insights and scenario planning capabilities.
+
+💡 **Proposed Solution:** ExpenseTracker is a comprehensive personal finance management application that combines traditional expense tracking with AI-powered insights. It features smart budget planning, receipt scanning with OCR, What-If scenario simulation, shared budget groups, and dynamic mood-based themes that adapt to spending patterns.
+
+🎯 **Target Users / Use Cases:** 
+- **Individuals** seeking better financial control and spending awareness
+- **Students** managing limited budgets and expenses
+- **Families** tracking shared expenses and budgets
+- **Professionals** wanting AI-driven financial insights
+- **Anyone** looking to improve their financial habits and savings
+
+---
+
+## 🔬 Methodology
+1. **Research & Ideation** – Analyzed pain points in personal finance management and identified opportunities for AI integration.
+
+2. **Design** – Created intuitive UI/UX with mobile-first responsive design, implemented dark/light themes with dynamic mood-based theming.
+
+3. **Develop** – Built core features including expense tracking, budget management, AI insights, receipt scanning, What-If simulator, and shared groups.
+
+4. **Test** – Conducted comprehensive testing across devices, implemented error handling, and validated all user flows.
+
+5. **Deploy** – Configured for production deployment with proper environment variables and database setup.
+
+6. **Future Scope** – Advanced analytics, investment tracking, bill reminders, and enhanced AI recommendations.
+
+---
+
+## 👥 Team Details
+**Team Name:** `Team Visons`
+
+| Name | Role | Email |
+|---|---:|---|
+| Sathvik chandra | Team Lead | sathvikchandra123@gmail.com |
+| Saisrikar | Team Member | 2311CS030246@mallareddyuniversity.ac.in|
+| Tarun | Team Member | 2311CS020542@mallareddyuniversity.ac.in |
+| Nagesh | Team Member   | 2311CS020576@mallareddyuniversity.ac.in |
+
+---
+
+## 🛠️ Technology Stack
+`Next.js 13.5` | `TypeScript` | `Supabase` | `TailwindCSS` | `Google Gemini AI` | `OCR.Space API` | `React` | `PostgreSQL`
+
+### **Frontend:**
+- **Next.js 13.5** - React framework with App Router
+- **TypeScript** - Type-safe development
+- **TailwindCSS** - Utility-first CSS framework
+- **shadcn/ui** - Modern component library
+- **React Hook Form** - Form management
+- **Recharts** - Data visualization
+
+### **Backend:**
+- **Supabase** - Backend-as-a-Service (Auth, Database, RLS)
+- **PostgreSQL** - Relational database
+- **Row Level Security** - Data protection
+
+### **AI & External APIs:**
+- **Google Gemini AI** - Spending analysis and insights
+- **OCR.Space API** - Receipt text extraction
+
+### **Deployment:**
+- **Vercel** - Frontend hosting
+- **Supabase Cloud** - Database hosting
+
+---
+
+## 📹 Demonstration Video
+▶️ [Part 1 - https://www.loom.com/share/32e1d1ae04774b4bb1e65d36c5953e81?sid=04b89c26-8fc3-4b2e-98b0-180b13ffe3c8]
+▶️ [Part 2 - https://www.loom.com/share/26bddd0509ae4f739921af37a4f04c09?sid=6deef484-3d73-43a4-a229-2c10273d72a1]
+---
+
+## 🌐 Deployment
+🔗 [https://indiabudgetbuddy.vercel.app/]
+
+### **Local Development:**
+   ```bash
+# Clone the repository
+git clone [https://github.com/Saisrikar-Kokku/Take-Control-of-Your-Financial-Future.git]
+
+# Install dependencies
+   npm install
+
+# Set up environment variables
+cp .env.example .env.local
+
+# Run development server
+   npm run dev
+   ```
+
+### **Environment Variables Required:**
+```env
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_key
+GEMINI_API_KEY=your_gemini_api_key
+OCR_SPACE_API_KEY=your_ocr_space_api_key
+```
+
+---
+
+## 🚀 Key Features
+
+### **Core Functionality:**
+- ✅ **Expense Tracking** - Add, edit, delete expenses with categories
+- ✅ **Budget Management** - Set and track weekly/monthly/yearly budgets
+- ✅ **Receipt Scanning** - OCR-powered receipt text extraction
+- ✅ **AI Insights** - Smart spending analysis and recommendations
+- ✅ **What-If Simulator** - Scenario planning with goal backsolver
+- ✅ **Shared Groups** - Collaborative budget management
+- ✅ **Dynamic Themes** - Mood-based UI themes (OK/Watch/Overspend)
+
+### **Advanced Features:**
+- 🔄 **Auto-Mood System** - UI adapts based on spending patterns
+- 📱 **Mobile Responsive** - Optimized for all device sizes
+- 🌙 **Dark/Light Mode** - User preference themes
+- 🔐 **Secure Authentication** - Supabase Auth with RLS
+- 📊 **Visual Analytics** - Charts and progress indicators
+- 🎯 **Goal Tracking** - Financial goal setting and monitoring
+
+---
+
+## 📚 References
+- [Next.js Documentation](https://nextjs.org/docs)
+- [Supabase Documentation](https://supabase.com/docs)
+- [TailwindCSS Documentation](https://tailwindcss.com/docs)
+- [Google Gemini AI API](https://ai.google.dev/docs)
+- [OCR.Space API Documentation](https://ocr.space/ocrapi)
+
+---
+
+## 🖼️ Assets / Screenshots
+
+### **Dashboard Overview**
+<p align="center">
+  <img src="./Dashboard.png" alt="ExpenseTracker Dashboard" width="800" />
+  <br/>
+  <em>Main dashboard showing budget overview, recent expenses, and quick actions</em>
+</p>
+
+### **Receipt Scanning Feature**
+<p align="center">
+  <img src="./ScanExpenseReceipt.png" alt="Receipt Scanning Interface" width="600" />
+  <br/>
+  <em>AI-powered receipt scanning with OCR text extraction and automatic form filling</em>
+</p>
+
+### **Budget Management**
+<p align="center">
+  <img src="./BudgetPlanner.png" alt="Budget Planner Interface" width="800" />
+  <br/>
+  <em>Budget creation and tracking with visual progress indicators</em>
+</p>
+
+### **AI Insights & Analysis**
+<p align="center">
+  <img src="./AIinsights.png" alt="AI Insights Dashboard" width="800" />
+  <br/>
+  <em>AI-powered spending analysis and personalized financial recommendations</em>
+</p>
+
+### **Shared Groups Feature**
+<p align="center">
+  <img src="./Groups.png" alt="Shared Groups Interface" width="800" />
+  <br/>
+  <em>Collaborative budget management for roommates, families, and friends</em>
+</p>
+
+
+---
+
+## 🏆 Project Highlights
+
+### **Innovation:**
+- **AI-Powered Insights** - Intelligent spending analysis using Google Gemini
+- **Dynamic Mood Themes** - UI that adapts to financial health
+- **What-If Scenario Planning** - Advanced financial simulation
+- **Smart Receipt Processing** - OCR + AI extraction
+
+### **Technical Excellence:**
+- **Type-Safe Development** - Full TypeScript implementation
+- **Mobile-First Design** - Responsive across all devices
+- **Secure Architecture** - Row Level Security with Supabase
+- **Modern Tech Stack** - Latest Next.js with App Router
+
+### **User Experience:**
+- **Intuitive Interface** - Clean, modern design
+- **Real-time Updates** - Live data synchronization
+- **Accessibility** - WCAG compliant components
+- **Performance** - Optimized loading and rendering
+
+---
+
+<p align="center">
+  <b>Hackathon:</b> AIGNITE 2K25 | Organized by MLSC<br/>
+  <b>Project:</b> ExpenseTracker - Smart Finance Management<br/>
+  <b>Status:</b> ✅ Production Ready
+</p>
